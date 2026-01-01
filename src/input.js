@@ -1,25 +1,47 @@
+import { getBeginnerMove } from "./ai/beginnerAI.js";
+
 // 입력 처리
+const HUMAN = 1;
+const AI = 2;
+
 export function setupInput(canvas, game, renderer) {
+  function handleMove(x, y) {
+    if (!game.placeStone(x, y)) return;
+
+    renderer.render();
+
+    if (game.gameOver) {
+      setTimeout(() => alert("흑 승리!"), 10);
+      return;
+    }
+
+    // AI 차례
+    setTimeout(() => {
+      const move = getBeginnerMove(game, AI);
+      if (!move) return;
+
+      game.placeStone(move.x, move.y);
+      renderer.render();
+
+      if (game.gameOver) {
+        setTimeout(() => alert("백 승리!"), 10);
+      }
+    }, 300); // 생각하는 척
+  }
+
   function handleInput(clientX, clientY) {
+    if (game.currentPlayer !== HUMAN || game.gameOver) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = clientX - rect.left;
     const y = clientY - rect.top;
 
-    const boardX = Math.round((x - renderer.PADDING) / renderer.CELL_SIZE);
-    const boardY = Math.round((y - renderer.PADDING) / renderer.CELL_SIZE);
+    const bx = Math.round((x - renderer.PADDING) / renderer.CELL_SIZE);
+    const by = Math.round((y - renderer.PADDING) / renderer.CELL_SIZE);
 
-    if (boardX < 0 || boardX >= game.size || boardY < 0 || boardY >= game.size)
-      return;
+    if (bx < 0 || bx >= game.size || by < 0 || by >= game.size) return;
 
-    if (game.placeStone(boardX, boardY)) {
-      renderer.render();
-
-      if (game.gameOver) {
-        setTimeout(() => {
-          alert(game.currentPlayer === 1 ? "백 승리!" : "흑 승리!");
-        }, 10);
-      }
-    }
+    handleMove(bx, by);
   }
 
   canvas.addEventListener("click", (e) => {
@@ -27,8 +49,6 @@ export function setupInput(canvas, game, renderer) {
   });
 
   canvas.addEventListener("touchstart", (e) => {
-    // 기본적으로 수행하는 동작(Default Action)을 막는 메서드
-    // 브라우저가 제공하는 모바일 전용 기본 동작들이 게임이나 인터랙티브한 앱의 조작을 방해하기 때문
     e.preventDefault();
     const t = e.touches[0];
     handleInput(t.clientX, t.clientY);
