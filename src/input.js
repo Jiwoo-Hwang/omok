@@ -1,4 +1,4 @@
-import { getBeginnerMove } from "./ai/ai.js";
+import { getBeginnerMove } from "./ai/index.js";
 
 // 입력 처리
 const HUMAN = 1;
