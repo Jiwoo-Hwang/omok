@@ -14,5 +14,4 @@ renderer.render();
 resetBtn.addEventListener("click", () => {
   game.reset();
   renderer.render();
-  handleNextTurn(game, renderer);
 });
