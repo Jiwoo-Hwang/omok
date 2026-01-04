@@ -1,4 +1,4 @@
-import { getBeginnerMove } from "./ai/index.js";
+import { getAdvancedMove } from "./ai/index.js";
 
 // 입력 처리
 const HUMAN = 1;
@@ -17,7 +17,7 @@ export function setupInput(canvas, game, renderer) {
 
     // AI 차례
     setTimeout(() => {
-      const move = getBeginnerMove(game, AI);
+      const move = getAdvancedMove(game, AI);
       if (!move) return;
 
       game.placeStone(move.x, move.y);
