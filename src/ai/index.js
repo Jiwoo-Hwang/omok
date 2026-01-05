@@ -2,33 +2,36 @@ import { findImmediateWin } from "./immediateWin.js";
 import { evaluatePoint } from "./openPattern.js";
 import { hasNeighbor } from "./utils.js";
 
+// index.js
+
 export function getAdvancedMove(game, aiPlayer) {
   const { board, size } = game;
   const opponent = aiPlayer === 1 ? 2 : 1;
 
-  // 1. 즉시 승리수 확인
+  // 1. 즉시 승리/방어 (이건 생략하면 안 됩니다)
   const winNow = findImmediateWin(game, aiPlayer);
   if (winNow) return winNow;
+  const blockWin = findImmediateWin(game, opponent);
+  if (blockWin) return blockWin;
 
   let bestScore = -Infinity;
   let bestMove = null;
 
-  // 보드의 모든 칸 탐색
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       if (board[y][x] !== 0 || !hasNeighbor(board, x, y, size)) continue;
 
-      // --- 시뮬레이션 시작 ---
-      // 1. 내가 여기 둔다고 가정
+      // [나의 시뮬레이션]
       board[y][x] = aiPlayer;
       const myMoveScore = evaluatePoint(game, x, y, aiPlayer);
 
-      // 2. 이 상황에서 상대방이 얻을 수 있는 '최선의 수'의 점수를 찾음
+      // [상대의 최선의 대응 탐색]
       let bestOpponentScore = 0;
       for (let oy = 0; oy < size; oy++) {
         for (let ox = 0; ox < size; ox++) {
           if (board[oy][ox] === 0 && hasNeighbor(board, ox, oy, size)) {
-            const opScore = evaluatePoint(game, ox, oy, aiPlayer); // 상대 입장에서의 가치
+            // 중요: 상대방(opponent)의 관점에서 이 자리가 얼마나 좋은지 계산해야 함
+            const opScore = evaluatePoint(game, ox, oy, opponent);
             if (opScore > bestOpponentScore) {
               bestOpponentScore = opScore;
             }
@@ -36,11 +39,9 @@ export function getAdvancedMove(game, aiPlayer) {
         }
       }
 
-      // 3. 최종 점수 = 나의 이득 - 상대의 최선의 이득
+      // 최종 점수 = 내 수의 가치 - 상대가 얻을 최대 이득
       const finalScore = myMoveScore - bestOpponentScore;
-
-      // 시뮬레이션 종료 (돌을 다시 치움)
-      board[y][x] = 0;
+      board[y][x] = 0; // 되돌리기
 
       if (finalScore > bestScore) {
         bestScore = finalScore;
